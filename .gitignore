@@ -1,0 +1,7 @@
+# Installers are release assets, never git content.
+drop/
+*.exe
+*.dmg
+*.zip
+*.blockmap
+.DS_Store
