@@ -20,10 +20,8 @@ the page, so releases only ever contain the installer.
 
    Needs `gh auth login`, or `GH_TOKEN` set to a PAT with `repo` scope.
 
-3. First release only: flip `released: false` → `true` for `weather-player` in
-   `workers/downloads/worker.js`, then `npx wrangler deploy`. That takes the
-   page out of "Not available yet" mode. Later releases need no worker change —
-   `/windows/latest` always resolves to the newest published release.
+3. Nothing else. `/windows/latest` always resolves to the newest published
+   release, so the worker needs no change between versions.
 
 ## Where it shows up
 
