@@ -3,9 +3,12 @@
 #
 #   ./publish.sh drop/Skycaster-Weather-Player-Setup-1.0.0.exe 1.0.0
 #
-# Generates latest.yml (electron-updater feed), creates the GitHub release
-# tagged v<version>, and uploads both assets. Afterwards the installer is live
-# at https://downloads.skycaster.tv/weather-player/windows/latest
+# Creates the GitHub release tagged v<version> and uploads the installer.
+# Afterwards it is live at:
+#   https://downloads.skycaster.tv/weather-player/windows/latest
+#
+# The app has no auto-updater, so no latest.yml is generated — new versions are
+# a manual re-download from the page.
 #
 # Auth: `gh auth login`, or export GH_TOKEN=<classic PAT with repo scope>.
 
@@ -27,31 +30,12 @@ VERSION=${VERSION#v}
 TAG="v$VERSION"
 NAME=$(basename "$EXE")
 SIZE=$(wc -c < "$EXE" | tr -d ' ')
-SHA512=$(openssl dgst -sha512 -binary "$EXE" | openssl base64 -A)
-DATE=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
 
-WORK=$(mktemp -d)
-trap 'rm -rf "$WORK"' EXIT
-YML="$WORK/latest.yml"
-
-# electron-updater feed. `url` is relative, so the updater resolves it against
-# its feed base (.../weather-player/) and the worker serves it by asset name.
-cat > "$YML" <<EOF
-version: $VERSION
-files:
-  - url: $NAME
-    sha512: $SHA512
-    size: $SIZE
-path: $NAME
-sha512: $SHA512
-releaseDate: '$DATE'
-EOF
-
-echo "→ $NAME  ($(printf '%.1f' "$(echo "$SIZE/1048576" | bc -l)") MB)"
+echo "→ $NAME  ($((SIZE / 1048576)) MB)"
 echo "→ tag $TAG"
 
 if command -v gh >/dev/null 2>&1; then
-  gh release create "$TAG" "$EXE" "$YML" \
+  gh release create "$TAG" "$EXE" \
     --repo "$OWNER/$REPO" \
     --title "Skycaster Weather Player $VERSION" \
     --notes "Windows installer for Skycaster Weather Player $VERSION."
@@ -69,16 +53,17 @@ else
   ID=$(echo "$REL" | sed -n 's/.*"id": *\([0-9]*\).*/\1/p' | head -1)
   [[ -n $ID ]] || { echo "release create failed:"; echo "$REL"; exit 1; }
 
-  for f in "$EXE" "$YML"; do
-    n=$(basename "$f")
-    echo "→ uploading $n"
-    curl -sS -X POST "$UP/repos/$OWNER/$REPO/releases/$ID/assets?name=$n" \
-      -H "Authorization: Bearer $GH_TOKEN" \
-      -H "Content-Type: application/octet-stream" \
-      --data-binary @"$f" -o /dev/null
-  done
+  echo "→ uploading $NAME"
+  curl -sS -X POST "$UP/repos/$OWNER/$REPO/releases/$ID/assets?name=$NAME" \
+    -H "Authorization: Bearer $GH_TOKEN" \
+    -H "Content-Type: application/octet-stream" \
+    --data-binary @"$EXE" -o /dev/null
 fi
 
 echo
 echo "done — https://downloads.skycaster.tv/weather-player"
 echo "direct: https://downloads.skycaster.tv/weather-player/windows/latest"
+echo
+echo "NOTE: the download page stays in 'Not available yet' mode until you set"
+echo "      released: true for weather-player in workers/downloads/worker.js"
+echo "      and redeploy (npx wrangler deploy)."

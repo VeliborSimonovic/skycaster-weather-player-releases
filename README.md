@@ -5,19 +5,25 @@ repo exists only to hold release assets, which
 [downloads.skycaster.tv](https://downloads.skycaster.tv/weather-player) streams
 to users so the github.com URL is never exposed.
 
+The app has **no auto-updater**. Users get new versions by re-downloading from
+the page, so releases only ever contain the installer.
+
 ## Publish a build
 
 1. Drop the installer in `drop/` (git-ignored — installers are release assets,
-   never committed).
+   never committed; git rejects files over 100 MB).
 2. Run:
 
    ```bash
    ./publish.sh drop/Skycaster-Weather-Player-Setup-1.0.0.exe 1.0.0
    ```
 
-That generates `latest.yml`, creates the `v1.0.0` release, and uploads both.
-Within a minute or two (worker caches the release lookup for 120s) the download
-page flips from "Not released yet" to live.
+   Needs `gh auth login`, or `GH_TOKEN` set to a PAT with `repo` scope.
+
+3. First release only: flip `released: false` → `true` for `weather-player` in
+   `workers/downloads/worker.js`, then `npx wrangler deploy`. That takes the
+   page out of "Not available yet" mode. Later releases need no worker change —
+   `/windows/latest` always resolves to the newest published release.
 
 ## Where it shows up
 
@@ -29,29 +35,10 @@ page flips from "Not released yet" to live.
 | `downloads.skycaster.tv/weather-player/older` | all versions |
 | `downloads.skycaster.tv/weather-player/api/latest` | `{"version":"1.0.0"}` |
 
-## Auto-update
-
-Point the app's `electron-updater` feed at:
-
-```js
-autoUpdater.setFeedURL({
-  provider: 'generic',
-  url: 'https://downloads.skycaster.tv/weather-player',
-});
-```
-
-`publish.sh` writes the `latest.yml` that feed reads. If the app is already
-built with electron-builder, prefer letting it publish directly instead:
-
-```json
-"publish": { "provider": "github", "owner": "VeliborSimonovic", "repo": "skycaster-weather-player-releases" }
-```
-
-then `electron-builder --win --publish always` — it produces `latest.yml` itself
-and `publish.sh` is unnecessary.
-
 ## Notes
 
 - Releases must be **published**, not drafts — the worker skips drafts.
 - Tags are `v<version>`; the worker strips the leading `v`.
+- The worker caches release lookups for 120s, so a new upload can take up to two
+  minutes to appear.
 - Max 2 GB per asset. Larger than that, switch the worker to Cloudflare R2.
