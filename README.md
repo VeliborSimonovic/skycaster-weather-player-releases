@@ -1,4 +1,4 @@
-# Skycaster Weather Player — releases
+| latest build (zip) |# Skycaster Weather Player — releases
 
 Release host for **Skycaster Weather Player** (Windows). No source here — this
 repo exists only to hold release assets, which
@@ -15,7 +15,7 @@ the page, so releases only ever contain the installer.
 2. Run:
 
    ```bash
-   ./publish.sh drop/Skycaster-Weather-Player-Setup-1.0.0.exe 1.0.0
+   ./publish.sh drop/Skycaster-Weather-Player-1.0.0-win-x64.zip 1.0.0
    ```
 
    Needs `gh auth login`, or `GH_TOKEN` set to a PAT with `repo` scope.
