@@ -1,4 +1,4 @@
-| latest build (zip) |# Skycaster Weather Player — releases
+# Skycaster Weather Player — releases
 
 Release host for **Skycaster Weather Player** (Windows). No source here — this
 repo exists only to hold release assets, which
@@ -28,7 +28,7 @@ the page, so releases only ever contain the installer.
 | URL | |
 |---|---|
 | `downloads.skycaster.tv/weather-player` | download page |
-| `downloads.skycaster.tv/weather-player/windows/latest` | latest installer |
+| `downloads.skycaster.tv/weather-player/windows/latest` | latest build (zip) |
 | `downloads.skycaster.tv/weather-player/windows/1.0.0` | a specific version |
 | `downloads.skycaster.tv/weather-player/older` | all versions |
 | `downloads.skycaster.tv/weather-player/api/latest` | `{"version":"1.0.0"}` |
